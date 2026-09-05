@@ -1,7 +1,3 @@
-## ============================================================================
-## Makefile — Codexion
-## ============================================================================
-
 NAME		= codexion
 
 CC			= cc
@@ -25,22 +21,21 @@ SRCS		= src/main.c \
 
 OBJS		= $(SRCS:.c=.o)
 
-## ---- Rules ----------------------------------------------------------------
-
-.PHONY: all clean fclean re
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 %.o: %.c src/codexion.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	@rm -f $(OBJS)
 
 fclean: clean
-	rm -f $(NAME)
+	@rm -f $(NAME)
 
 re: fclean all
+
+.PHONY: all clean fclean re
