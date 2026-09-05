@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codexion — Master Course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --panel:#111722;
+    --panel-2:#151d2b;
+    --border:#232e40;
+    --text:#dde4ee;
+    --text-dim:#8b96a8;
+    --text-faint:#5b6579;
+    --cyan:#5fd0d9;
+    --amber:#e3a95c;
+    --red:#e2604a;
+    --green:#7bc98f;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --sans:'IBM Plex Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.65;
+    font-size:16px;
+  }
+  a{color:var(--cyan); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  code, .k{font-family:var(--mono);}
+
+  /* ---------- layout ---------- */
+  .shell{display:grid; grid-template-columns:280px 1fr; min-height:100vh;}
+  @media (max-width:900px){ .shell{grid-template-columns:1fr;} .sidebar{position:relative; height:auto;} }
+
+  .sidebar{
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    padding:28px 20px 60px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .brand svg{flex:none;}
+  .brand-name{font-family:var(--mono); font-weight:700; font-size:1.05rem; letter-spacing:.02em;}
+  .brand-tag{font-size:.78rem; color:var(--text-dim); margin:0 0 26px; padding-left:34px;}
+
+  .navpart{margin-top:22px;}
+  .navpart-label{font-size:.72rem; color:var(--text-faint); font-family:var(--mono); margin-bottom:8px; padding-left:2px;}
+  .navpart a{
+    display:flex; gap:10px; align-items:baseline;
+    padding:6px 8px; border-radius:6px; color:var(--text-dim); font-size:.88rem;
+  }
+  .navpart a:hover{background:var(--panel-2); color:var(--text); text-decoration:none;}
+  .navpart a .num{font-family:var(--mono); color:var(--text-faint); font-size:.78rem; min-width:20px;}
+
+  main{padding:52px 56px 120px; max-width:920px;}
+  @media (max-width:700px){ main{padding:32px 20px 90px;} }
+
+  /* ---------- hero ---------- */
+  .hero{margin-bottom:64px;}
+  .hero .kicker{font-family:var(--mono); color:var(--amber); font-size:.85rem; margin-bottom:14px;}
+  .hero h1{font-size:2.6rem; line-height:1.12; margin:0 0 18px; font-weight:700; letter-spacing:-.01em;}
+  .hero p.lead{color:var(--text-dim); font-size:1.08rem; max-width:64ch; margin:0 0 26px;}
+  .hero .divider-diagram{margin-top:36px;}
+
+  /* ---------- sections ---------- */
+  .part-title{
+    margin:88px 0 8px; font-family:var(--mono); font-size:.85rem; color:var(--amber);
+    border-top:1px solid var(--border); padding-top:36px;
+  }
+  section.phase{margin-bottom:64px; scroll-margin-top:24px;}
+  section.phase:first-of-type{margin-top:16px;}
+  .phase-head{display:flex; align-items:baseline; gap:16px; margin-bottom:6px;}
+  .phase-num{font-family:var(--mono); color:var(--text-faint); font-size:1.4rem; font-weight:600;}
+  .phase-head h2{font-size:1.55rem; margin:0; font-weight:700;}
+  .phase-sub{color:var(--text-dim); font-size:.95rem; margin:0 0 22px;}
+
+  h3{font-size:1.12rem; margin:34px 0 10px; color:var(--text);}
+  h4{font-size:.98rem; margin:22px 0 8px; color:var(--cyan); font-family:var(--mono); font-weight:600;}
+  p{margin:0 0 14px; max-width:74ch;}
+  ul, ol{margin:0 0 16px; padding-left:22px; max-width:74ch;}
+  li{margin-bottom:6px;}
+  strong{color:#fff; font-weight:600;}
+  .dim{color:var(--text-dim);}
+
+  .callout{
+    border-left:3px solid var(--cyan); background:var(--panel);
+    padding:14px 18px; border-radius:0 8px 8px 0; margin:18px 0; max-width:74ch;
+  }
+  .callout.warn{border-color:var(--red);}
+  .callout.tip{border-color:var(--green);}
+  .callout .tag{font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); display:block; margin-bottom:6px;}
+
+  table{border-collapse:collapse; width:100%; margin:16px 0 24px; font-size:.9rem;}
+  th, td{border:1px solid var(--border); padding:8px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--panel); font-family:var(--mono); font-weight:600; font-size:.78rem; color:var(--amber); text-transform:uppercase; letter-spacing:.03em;}
+  td code{color:var(--cyan);}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015);}
+
+  pre{
+    background:#0c1119; border:1px solid var(--border); border-radius:8px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:.84rem;
+    color:#c7d2e0; margin:14px 0 20px;
+  }
+  pre .ln{color:var(--text-faint);}
+  .term-title{font-family:var(--mono); font-size:.72rem; color:var(--text-faint); margin-bottom:-6px; margin-top:14px;}
+
+  .chip{
+    display:inline-block; font-family:var(--mono); font-size:.72rem; padding:2px 8px;
+    border:1px solid var(--border); border-radius:20px; color:var(--text-dim); margin-right:6px;
+  }
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:18px 0;}
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px 18px;}
+  .card h4{margin-top:0;}
+
+  hr.soft{border:none; border-top:1px solid var(--border); margin:40px 0;}
+
+  .checklist{list-style:none; padding-left:0;}
+  .checklist li{padding-left:28px; position:relative;}
+  .checklist li::before{
+    content:''; position:absolute; left:0; top:5px; width:14px; height:14px;
+    border:1.5px solid var(--text-faint); border-radius:4px;
+  }
+
+  footer.end{
+    margin-top:80px; padding-top:30px; border-top:1px solid var(--border);
+    color:var(--text-faint); font-size:.85rem;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <nav class="sidebar">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="#e3a95c" stroke-width="1.4"/>
+        <path d="M8 12h2M14 12h2M12 8v8" stroke="#5fd0d9" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">CODEXION</span>
+    </div>
+    <p class="brand-tag">Master course · theory → architecture</p>
+
+    <div class="navpart">
+      <div class="navpart-label">START HERE</div>
+      <a href="#phase-0"><span class="num">00</span> Orientation</a>
+    </div>
+
+    <div class="navpart">
+      <div class="navpart-label">PART I — FOUNDATIONS</div>
+      <a href="#phase-1"><span class="num">01</span> Concurrency Foundations</a>
+      <a href="#phase-2"><span class="num">02</span> Races, Deadlock, Starvation</a>
+      <a href="#phase-3"><span class="num">03</span> POSIX Threads in C</a>
+      <a href="#phase-4"><span class="num">04</span> Synchronization Primitives</a>
+      <a href="#phase-5"><span class="num">05</span> The Allowed Toolbox</a>
+      <a href="#phase-6"><span class="num">06</span> Time in Codexion</a>
+      <a href="#phase-7"><span class="num">07</span> Scheduling &amp; Heaps</a>
+    </div>
+
+    <div class="navpart">
+      <div class="navpart-label">PART II — THE SUBJECT</div>
+      <a href="#phase-8"><span class="num">08</span> Subject, Deconstructed</a>
+      <a href="#phase-9"><span class="num">09</span> Philosophers in Disguise</a>
+      <a href="#phase-10"><span class="num">10</span> Scope &amp; Philosophy</a>
+    </div>
+
+    <div class="navpart">
+      <div class="navpart-label">PART III — ARCHITECTURE</div>
+      <a href="#phase-11"><span class="num">11</span> Files &amp; Structure</a>
+      <a href="#phase-12"><span class="num">12</span> Data Blueprint</a>
+      <a href="#phase-13"><span class="num">13</span> Concurrency Protocol</a>
+    </div>
+
+    <div class="navpart">
+      <div class="navpart-label">PART IV — SHIP IT</div>
+      <a href="#phase-14"><span class="num">14</span> Norm Checklist</a>
+      <a href="#phase-15"><span class="num">15</span> Your Test Harness</a>
+      <a href="#phase-16"><span class="num">16</span> Roadmap</a>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+
+    <div class="hero">
+      <div class="kicker">// a masters-style walkthrough — no implementation yet</div>
+      <h1>Master the race for resources<br>before the deadline masters you.</h1>
+      <p class="lead">
+        Codexion is a multithreaded C simulation: coders competing over shared USB "dongles"
+        under strict deadlines, arbitrated by <code>fifo</code> or <code>edf</code> scheduling.
+        This course takes you from "what is a thread" to a fully designed, norm-compliant,
+        deadlock-free architecture — <strong>without writing a single line of C</strong>.
+        Implementation is deliberately its own, later, invoked phase.
+      </p>
+    </div>
+
+    <!-- ============ PHASE 0 ============ -->
+    <section class="phase" id="phase-0">
+      <div class="phase-head"><span class="phase-num">00</span><h2>Orientation</h2></div>
+      <p class="phase-sub">How this course is built, and how to use it.</p>
+
+      <p>This document has three jobs, in order:</p>
+      <ol>
+        <li><strong>Teach the concepts</strong> you need — concurrency, races, deadlocks, POSIX threads,
+          scheduling theory — assuming zero prior knowledge.</li>
+        <li><strong>Dissect the subject</strong> line by line, so every rule maps to something you already
+          understand from step 1.</li>
+        <li><strong>Design the architecture</strong> — files, structs, thread protocol — as prose and diagrams,
+          <em>never as compilable code</em>. You should be able to explain every decision before a single
+          <code>.c</code> file exists.</li>
+      </ol>
+      <div class="callout tip">
+        <span class="tag">Why no code yet</span>
+        Writing code before understanding <em>why</em> a mutex, a heap, or a monitor thread is needed
+        produces exactly the kind of implementation you can't defend — which the subject's own AI-usage
+        chapter explicitly warns against. Implementation becomes its own phase, invoked once this
+        foundation is solid, one module at a time.
+      </div>
+    </section>
+
+    <div class="part-title">PART I — FOUNDATIONS</div>
+
+    <!-- ============ PHASE 1 ============ -->
+    <section class="phase" id="phase-1">
+      <div class="phase-head"><span class="phase-num">01</span><h2>Concurrency Foundations</h2></div>
+      <p class="phase-sub">Processes vs. threads, and why the OS lies to you about order.</p>
+
+      <h3>Process vs. thread</h3>
+      <p>A <strong>process</strong> is an isolated program: its own memory space, its own everything.
+        A <strong>thread</strong> is a unit of execution <em>inside</em> a process. Multiple threads
+        in the same process share the process's heap, global data, and open files — but each thread
+        keeps its own private stack, its own registers, and its own program counter (where it currently is
+        in the code).</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>SHARED between threads</h4>
+          <ul><li>Heap (<code>malloc</code>'d memory)</li><li>Global / static variables</li><li>Open file descriptors</li></ul>
+        </div>
+        <div class="card">
+          <h4>PRIVATE to each thread</h4>
+          <ul><li>Its own stack (local variables)</li><li>Its own registers / program counter</li><li>The argument passed to it at creation</li></ul>
+        </div>
+      </div>
+
+      <p>This is the entire reason threads are useful here: a coder and the simulation's shared state
+        (dongles, logs, timers) must be the <em>same memory</em>, visible to every coder thread and the
+        monitor thread simultaneously — which is exactly what "shared" memory gives you, and exactly
+        what makes it dangerous.</p>
+
+      <h3>Concurrency vs. parallelism</h3>
+      <p><strong>Concurrency</strong> is a property of the program's structure: multiple logical tasks
+        make progress over overlapping time windows. <strong>Parallelism</strong> is a property of the
+        hardware: tasks literally execute at the same instant on different cores. Codexion must be
+        <em>correct</em> under concurrency regardless of whether it happens to run in parallel — your
+        code must never assume a particular number of cores, or that any two operations happen
+        "at the same time" in a way you can rely on.</p>
+
+      <h3>Interleaving: the only assumption you're allowed to make is none</h3>
+      <p>The OS scheduler may pause and resume any thread at almost any instruction boundary, in
+        any order, for any duration. A program is correct only if it behaves correctly under
+        <em>every possible interleaving</em> — not just the one you happened to observe while testing.
+        "It worked when I ran it ten times" proves nothing about interleaving #11.</p>
+
+      <div class="callout warn">
+        <span class="tag">Why the subject bans global variables</span>
+        Global variables are the easiest way to accidentally create unsynchronized shared state.
+        Forbidding them forces every piece of shared data to travel explicitly through function
+        parameters (pointers to one shared struct), which makes ownership and access visible — you
+        can grep for every place a dongle is touched instead of hoping you remembered them all.
+      </div>
+    </section>
+
+    <!-- ============ PHASE 2 ============ -->
+    <section class="phase" id="phase-2">
+      <div class="phase-head"><span class="phase-num">02</span><h2>Races, Deadlock, Starvation</h2></div>
+      <p class="phase-sub">The three ways concurrent code fails — and the two properties that prove it doesn't.</p>
+
+      <h3>Critical sections &amp; mutual exclusion</h3>
+      <p>A <strong>critical section</strong> is any piece of code that reads or writes shared state in a
+        way that isn't safe if another thread does the same thing simultaneously. <strong>Mutual exclusion</strong>
+        is the guarantee that at most one thread executes a given critical section at a time.</p>
+
+      <h3>Race conditions</h3>
+      <p>A <strong>race condition</strong> occurs when the correctness of a result depends on the
+        relative timing of unsynchronized accesses to shared memory. In Codexion: two coders reading
+        and writing "is this dongle available?" without a lock could both conclude it's free and both
+        grab it — a duplicated dongle. The <code>test_codexion.sh</code> script literally has a check
+        for this (the "two-dongle rule").</p>
+
+      <h3>Deadlock — Coffman's four conditions</h3>
+      <p>A deadlock is a cycle of threads each waiting on a resource held by the next. It requires
+        <strong>all four</strong> of these to hold simultaneously — break any one, and deadlock becomes
+        impossible:</p>
+      <table>
+        <tr><th>Condition</th><th>Meaning</th><th>In Codexion terms</th></tr>
+        <tr><td>Mutual exclusion</td><td>A resource can be held by only one owner at a time.</td><td>A dongle is either free or held by exactly one coder.</td></tr>
+        <tr><td>Hold and wait</td><td>A thread holds one resource while waiting for another.</td><td>A coder grabs its left dongle, then waits for the right one.</td></tr>
+        <tr><td>No preemption</td><td>A resource can't be forcibly taken away.</td><td>You can't yank a dongle out of someone's hand.</td></tr>
+        <tr><td>Circular wait</td><td>A cycle of threads each waiting for the next.</td><td>Every coder holds their left dongle and waits for their right — a full circle, all waiting forever.</td></tr>
+      </table>
+      <p>This exact circular scenario is the textbook <strong>Dining Philosophers</strong> deadlock — you'll
+        design around it explicitly in <a href="#phase-9">Phase 09</a>.</p>
+
+      <h3>Starvation</h3>
+      <p>Even a deadlock-free system can let one thread wait forever if the arbitration policy is unfair.
+        This is why the subject mandates a deterministic scheduler (<code>fifo</code> or <code>edf</code>)
+        with a required tie-break rule: an arbitrary or biased grant order could starve one coder
+        indefinitely even though no deadlock ever occurs.</p>
+
+      <h3>Safety vs. liveness</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>SAFETY</h4>
+          <p style="margin:0">"Nothing bad ever happens." No dongle duplication, no data race,
+            no interleaved log lines.</p>
+        </div>
+        <div class="card">
+          <h4>LIVENESS</h4>
+          <p style="margin:0">"Something good eventually happens." No coder waits forever;
+            the simulation eventually stops.</p>
+        </div>
+      </div>
+      <p>The grading rubric checks both: memory/race tools (<code>valgrind</code>, <code>helgrind</code>)
+        verify safety; the repeated stress runs in <code>stress_test.sh</code> verify liveness.</p>
+    </section>
+
+    <!-- ============ PHASE 3 ============ -->
+    <section class="phase" id="phase-3">
+      <div class="phase-head"><span class="phase-num">03</span><h2>POSIX Threads in C</h2></div>
+      <p class="phase-sub">How C actually represents "a thread," and its lifecycle.</p>
+
+      <h3>The mental model</h3>
+      <p><code>pthread_t</code> is an opaque handle. Creating a thread means: give the OS a function
+        pointer and one <code>void*</code> argument; it starts running that function concurrently
+        with everything else, sharing the process's heap and globals but owning its own stack.</p>
+
+      <h3>Lifecycle</h3>
+      <table>
+        <tr><th>Stage</th><th>What happens</th></tr>
+        <tr><td>Create</td><td><code>pthread_create</code> spawns the thread; it begins executing immediately, concurrently with the caller.</td></tr>
+        <tr><td>Run</td><td>The thread executes its function body, reading/writing shared memory through synchronization primitives.</td></tr>
+        <tr><td>Join</td><td><code>pthread_join</code> blocks the caller until the target thread finishes, and reclaims its resources.</td></tr>
+      </table>
+      <div class="callout">
+        <span class="tag">Design implication</span>
+        The allowed function list has <code>pthread_join</code> but no detach function. That means:
+        <strong>every</strong> coder thread and the monitor thread must be joined by <code>main</code>
+        before the program exits — and it's only <em>after</em> every join succeeds that it is safe to
+        destroy mutexes/condition variables and free memory. Join order becomes part of your cleanup design.
+      </div>
+
+      <h3>Passing data to a thread</h3>
+      <p><code>pthread_create</code> only accepts a single <code>void*</code>. To give a thread several
+        pieces of information (its coder id, and a pointer to the shared environment), you pass a pointer
+        to a small per-thread struct — never a raw integer cast into a pointer, which produces warnings
+        under <code>-Wall -Wextra -Werror</code> on many platforms and is simply bad practice.</p>
+
+      <h3>Compilation</h3>
+      <p>On Linux, POSIX threads require the <code>-pthread</code> flag at <em>both</em> compile and link
+        stages — not just <code>-lpthread</code>. This is exactly why the subject's required flags are
+        <code>-Wall -Wextra -Werror -pthread</code>; your Makefile's <code>CFLAGS</code> must carry it.</p>
+
+      <h3>Always check return values</h3>
+      <p>Every <code>pthread_*</code> function returns <code>0</code> on success or a nonzero error
+        code directly (not via <code>errno</code>). A silently failed <code>pthread_create</code> for
+        coder #7 out of 50 would leave your simulation running with a phantom coder — check every call.</p>
+    </section>
+
+    <!-- ============ PHASE 4 ============ -->
+    <section class="phase" id="phase-4">
+      <div class="phase-head"><span class="phase-num">04</span><h2>Synchronization Primitives</h2></div>
+      <p class="phase-sub">Mutexes stop collisions. Condition variables stop wasted spinning.</p>
+
+      <h3>The mutex</h3>
+      <p>A mutex is a binary lock: <code>lock()</code> blocks until no other thread holds it, then
+        takes ownership; <code>unlock()</code> releases it. Rules that matter here:</p>
+      <ul>
+        <li>The thread that locks a mutex must be the one that unlocks it.</li>
+        <li>Every code path out of a locked section — including early returns and error paths — must
+          unlock before leaving. A "forgot to unlock on the error branch" bug is a silent, hard-to-reproduce
+          deadlock.</li>
+        <li>A mutex only prevents <em>simultaneous access</em>. It cannot make a thread "wait efficiently
+          for a condition to become true" — busy-checking a flag while holding the lock wastes CPU and can
+          even deadlock if only the lock-holder itself could ever change that flag.</li>
+      </ul>
+
+      <h3>The condition variable</h3>
+      <p>A condition variable (always paired with a mutex) lets a thread sleep until another thread
+        says "something changed," without spinning. <code>pthread_cond_wait</code> atomically
+        (1) unlocks the mutex and (2) sleeps — then, once woken, re-locks the mutex before returning.
+        That atomicity is the entire point: there's no gap where another thread could change the state
+        between "I checked" and "I started waiting."</p>
+
+      <div class="callout warn">
+        <span class="tag">The predicate loop is not optional</span>
+        Always wait like this — conceptually — <code>while (!condition_is_true) wait();</code>, never
+        with a plain <code>if</code>. Two independent reasons: (1) <strong>spurious wakeups</strong> — POSIX
+        allows a thread to wake up from a condition wait with no signal having occurred at all; (2) even
+        after a real signal, another thread might race in and consume the state first. Re-checking the
+        actual predicate after waking, under the lock, is the only safe pattern.
+      </div>
+
+      <h3>Signal vs. broadcast</h3>
+      <table>
+        <tr><th>Call</th><th>Wakes</th><th>Use when</th></tr>
+        <tr><td><code>pthread_cond_signal</code></td><td>At most one waiter</td><td>You know exactly one waiter could possibly proceed.</td></tr>
+        <tr><td><code>pthread_cond_broadcast</code></td><td>Every waiter</td><td>Many waiters must re-check state (simpler to reason about, at a small extra wake-up cost).</td></tr>
+      </table>
+      <p>Given this project's goal of maximal simplicity, <strong>broadcast + re-check under the priority
+        queue's own decision</strong> is the easier pattern to prove correct: every waiter wakes, checks
+        "is it actually my turn according to the scheduler," and goes back to sleep if not. It costs a
+        few extra wake-ups; it costs nothing in correctness or clarity.</p>
+
+      <h3><code>pthread_cond_timedwait</code>: the monitor's secret weapon</h3>
+      <p>This variant waits until either it's signaled, <em>or</em> an absolute deadline (a
+        <code>struct timespec</code> in absolute — not relative — time) passes on its own. This single
+        primitive is what makes precise burnout detection possible without polling in a tight loop:
+        the monitor thread can sleep exactly until the nearest deadline and wake up precisely then.</p>
+
+      <h3>Destruction</h3>
+      <p>Every initialized mutex and condition variable must be destroyed exactly once, and only after
+        no thread can possibly touch it again — i.e., after every thread that could use it has been
+        joined. Destroying too early is undefined behavior; never destroying it is a (minor, but real)
+        resource leak.</p>
+    </section>
+
+    <!-- ============ PHASE 5 ============ -->
+    <section class="phase" id="phase-5">
+      <div class="phase-head"><span class="phase-num">05</span><h2>The Allowed Toolbox</h2></div>
+      <p class="phase-sub">Every external function the subject permits — and the gotcha attached to each.</p>
+
+      <table>
+        <tr><th>Function</th><th>Role here</th><th>Gotcha to remember</th></tr>
+        <tr><td><code>pthread_create</code></td><td>Spawn one thread per coder + one monitor thread.</td><td>Check return value; pass a pointer to a small per-thread struct, never a cast int.</td></tr>
+        <tr><td><code>pthread_join</code></td><td>Wait for a thread to finish and reclaim it.</td><td>No detach is allowed — every thread you create must eventually be joined by <code>main</code>.</td></tr>
+        <tr><td><code>pthread_mutex_init / destroy</code></td><td>Set up / tear down each lock.</td><td>Init before any thread can see it; destroy only after the last user is joined.</td></tr>
+        <tr><td><code>pthread_mutex_lock / unlock</code></td><td>Protect every piece of shared state.</td><td>Every locked path needs a matching unlock on <em>every</em> exit route.</td></tr>
+        <tr><td><code>pthread_cond_init / destroy</code></td><td>Set up / tear down each condition variable.</td><td>Same lifetime discipline as mutexes.</td></tr>
+        <tr><td><code>pthread_cond_wait</code></td><td>Sleep until notified, without holding the mutex while asleep.</td><td>Always inside a predicate loop.</td></tr>
+        <tr><td><code>pthread_cond_timedwait</code></td><td>Sleep until notified or a deadline — the monitor's burnout detector.</td><td>Needs an <em>absolute</em> <code>struct timespec</code>, not a duration.</td></tr>
+        <tr><td><code>pthread_cond_signal / broadcast</code></td><td>Wake waiters after state changes (dongle released, coder stopped).</td><td>Broadcast is simpler and safer for this project's scale.</td></tr>
+        <tr><td><code>gettimeofday</code></td><td>Wall-clock timestamp; base for all elapsed-ms computations.</td><td>Microseconds, not milliseconds — convert.</td></tr>
+        <tr><td><code>clock_gettime</code></td><td>Alternative/complementary timestamp source.</td><td>See the clock-consistency note below.</td></tr>
+        <tr><td><code>usleep</code></td><td>Microsecond sleep, if ever needed outside a cond-wait.</td><td>Can't be woken early — prefer timed condition waits wherever a thread might need to react to a state change.</td></tr>
+        <tr><td><code>write</code></td><td>Low-level, unbuffered output option.</td><td>Still needs the same logging mutex as <code>printf</code>/<code>fprintf</code>.</td></tr>
+        <tr><td><code>malloc / free</code></td><td>All dynamic allocation: coders, dongles, heap array.</td><td>Always check for <code>NULL</code>; free exactly what you allocate, exactly once.</td></tr>
+        <tr><td><code>printf / fprintf</code></td><td>Log lines.</td><td>Must be wrapped by the single logging mutex to stay serialized.</td></tr>
+        <tr><td><code>strcmp</code></td><td>Compare the scheduler argument against <code>"fifo"</code>/<code>"edf"</code>.</td><td>Reject anything else, including case variants.</td></tr>
+        <tr><td><code>strlen</code></td><td>Basic string inspection during argument parsing.</td><td>&nbsp;</td></tr>
+        <tr><td><code>atoi</code></td><td>Convert numeric arguments.</td><td>See the parsing warning below — <code>atoi</code> alone cannot detect invalid input.</td></tr>
+        <tr><td><code>memset</code></td><td>Zero-initialize freshly allocated structs.</td><td>&nbsp;</td></tr>
+      </table>
+
+      <div class="callout warn">
+        <span class="tag">atoi can't validate anything</span>
+        <code>atoi("abc")</code> and <code>atoi("0")</code> both return <code>0</code> — indistinguishably.
+        The subject requires rejecting negative numbers and non-integers. Neither <code>isdigit</code> nor
+        <code>strtol</code> is on the allowed list, so validation must be a hand-written loop comparing each
+        character against <code>'0'</code>…<code>'9'</code> (and an optional leading sign you then reject)
+        <em>before</em> you ever trust <code>atoi</code>'s numeric result.
+      </div>
+
+      <div class="callout">
+        <span class="tag">Clock consistency for timedwait</span>
+        <code>pthread_condattr_setclock</code> is <em>not</em> on the allowed list, which means a condition
+        variable's timed wait defaults to measuring against <code>CLOCK_REALTIME</code>. Any absolute
+        deadline you hand to <code>pthread_cond_timedwait</code> must therefore be computed from the same
+        clock family as <code>gettimeofday</code> (wall-clock), not <code>CLOCK_MONOTONIC</code> — mixing
+        them silently produces wrong wait durations. This lines up exactly with the subject's own hint that
+        <code>gettimeofday()</code> "is acceptable and recommended for simplicity" here.
+      </div>
+    </section>
+
+    <!-- ============ PHASE 6 ============ -->
+    <section class="phase" id="phase-6">
+      <div class="phase-head"><span class="phase-num">06</span><h2>Time in Codexion</h2></div>
+      <p class="phase-sub">One baseline, one conversion function, one absolute-deadline formula.</p>
+
+      <h3>The baseline</h3>
+      <p>Capture a single timestamp, <code>t0</code>, once — immediately after argument parsing, before
+        any thread is created. Every log line's timestamp and every deadline computation is expressed
+        relative to <code>t0</code>.</p>
+
+      <h4>elapsed_ms(now)</h4>
+      <p><code>(now.tv_sec - t0.tv_sec) * 1000 + (now.tv_usec - t0.tv_usec) / 1000</code></p>
+
+      <h3>Two time representations, two purposes</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>RELATIVE ms since t0</h4>
+          <p style="margin:0">What every log line prints, and how you reason about
+            "time_to_burnout ms since the last compile started."</p>
+        </div>
+        <div class="card">
+          <h4>ABSOLUTE struct timespec</h4>
+          <p style="margin:0"><code>t0 + deadline_ms</code>, expressed as seconds + nanoseconds — the
+            only format <code>pthread_cond_timedwait</code> accepts.</p>
+        </div>
+      </div>
+
+      <h3>The 10 ms tolerance</h3>
+      <p>The subject allows the burnout log to appear up to 10 ms after the actual burnout instant. That's
+        an acknowledgment of OS scheduling jitter — <strong>not</strong> a license to poll every 10 ms in
+        a busy loop. Compute the exact deadline, hand it to <code>pthread_cond_timedwait</code>, and let
+        the kernel wake you precisely at (or extremely close to) that instant.</p>
+    </section>
+
+    <!-- ============ PHASE 7 ============ -->
+    <section class="phase" id="phase-7">
+      <div class="phase-head"><span class="phase-num">07</span><h2>Scheduling &amp; Heaps</h2></div>
+      <p class="phase-sub">Why EDF is provably fair, and how to build the only data structure the subject truly demands.</p>
+
+      <h3>FIFO</h3>
+      <p>Serve requests strictly in arrival order. Simple to implement, trivially fair by construction —
+        as long as every request is eventually served, no one starves.</p>
+
+      <h3>EDF — Earliest Deadline First</h3>
+      <p>Serve whoever's <code>deadline = last_compile_start + time_to_burnout</code> is soonest. This is
+        a classical real-time scheduling result: for a single shared resource among tasks with hard
+        deadlines, EDF is the optimal online policy — if a feasible schedule exists at all, EDF will find
+        it. That's precisely the subject's own liveness clause: <em>"no coder should starve under edf,
+        provided the parameters are feasible."</em> EDF's guarantee is conditional on feasibility, not
+        magic — if your timing parameters are simply impossible (as in the deliberate burnout benchmark
+        cases), even a perfect scheduler can't save every coder.</p>
+
+      <div class="callout">
+        <span class="tag">Why a tie-break is mandatory, not decorative</span>
+        Two deadlines could — rarely, but possibly — be numerically equal. Comparing only by a single
+        real-number key makes the ordering ambiguous in that case. A deterministic secondary key (e.g.
+        coder id or a monotonically increasing arrival sequence number) removes the ambiguity entirely,
+        which is what "fully deterministic EDF policy, even in edge cases" is asking for.
+      </div>
+
+      <h3>Binary heaps, from scratch</h3>
+      <p>The subject explicitly forbids any standard-library priority queue, so the heap must be
+        hand-written. A binary heap is a complete binary tree stored flat in an array:</p>
+      <ul>
+        <li>For index <code>i</code> (0-based): parent is <code>(i-1)/2</code>, children are
+          <code>2i+1</code> and <code>2i+2</code>.</li>
+        <li><strong>Insert</strong>: append at the end, then "sift up" — swap with the parent while
+          smaller than it.</li>
+        <li><strong>Extract-min</strong>: read the root, move the last element to the root, shrink
+          the array, then "sift down" — swap with the smaller child while larger than it.</li>
+        <li>Both operations are <code>O(log n)</code> — irrelevant for a handful of coders, but it's the
+          correct, standard structure regardless of scale.</li>
+      </ul>
+
+      <div class="callout tip">
+        <span class="tag">One heap engine, not two</span>
+        Keep the heap itself completely generic: it only ever compares a numeric "key" per entry. At
+        startup, based on the <code>scheduler</code> argument, decide what that key <em>means</em> —
+        a monotonically increasing arrival counter for <code>fifo</code>, or the burnout deadline for
+        <code>edf</code>. One heap implementation now serves both policies, and the FIFO→LIFO recode
+        exercise mentioned in the grading sheet becomes a one-function change (flip the comparison), not
+        a rewrite.
+      </div>
+    </section>
+
+    <div class="part-title">PART II — THE SUBJECT</div>
+
+    <!-- ============ PHASE 8 ============ -->
+    <section class="phase" id="phase-8">
+      <div class="phase-head"><span class="phase-num">08</span><h2>The Subject, Deconstructed</h2></div>
+      <p class="phase-sub">Every rule from the PDF, translated into an engineering requirement.</p>
+
+      <h3>The eight arguments</h3>
+      <table>
+        <tr><th>#</th><th>Argument</th><th>Meaning</th></tr>
+        <tr><td>1</td><td><code>number_of_coders</code></td><td>Coder count — and dongle count (see below).</td></tr>
+        <tr><td>2</td><td><code>time_to_burnout</code> (ms)</td><td>Deadline window since the start of the last compile, or since simulation start if none yet.</td></tr>
+        <tr><td>3</td><td><code>time_to_compile</code> (ms)</td><td>Duration held with two dongles.</td></tr>
+        <tr><td>4</td><td><code>time_to_debug</code> (ms)</td><td>Duration of the debug phase.</td></tr>
+        <tr><td>5</td><td><code>time_to_refactor</code> (ms)</td><td>Duration of the refactor phase; immediately followed by a new dongle request.</td></tr>
+        <tr><td>6</td><td><code>number_of_compiles_required</code></td><td>Simulation stops once <em>every</em> coder has reached this many completed compiles.</td></tr>
+        <tr><td>7</td><td><code>dongle_cooldown</code> (ms)</td><td>Minimum time a dongle sits idle after release before it can be taken again.</td></tr>
+        <tr><td>8</td><td><code>scheduler</code></td><td>Exactly <code>fifo</code> or <code>edf</code> — reject anything else.</td></tr>
+      </table>
+      <p><strong>All eight are mandatory and must be validated</strong>: reject negative numbers,
+        non-integer strings, and any scheduler value other than the two literal strings.</p>
+
+      <h3>The circular table</h3>
+      <p>Coders are numbered 1…N and seated in a circle: coder 1 sits next to coder N, and any coder
+        N sits between N-1 and N+1. There is exactly <strong>one dongle per adjacent pair</strong> —
+        which works out to exactly <code>number_of_coders</code> dongles total, each shared by two
+        neighbors.</p>
+
+      <div class="callout warn">
+        <span class="tag">The n = 1 special case</span>
+        With a single coder, there is only <strong>one</strong> dongle on the table — "left" and "right"
+        refer to the same physical dongle. Since compiling needs two <em>distinct</em> dongles held
+        simultaneously, a lone coder can mathematically never compile and is guaranteed to burn out.
+        This is exactly the first benchmark case in the grading rubric
+        (<code>./codexion 1 800 200 200 200 10 0 fifo</code>) — your dongle-count and neighbor logic must
+        produce this outcome naturally, not as a special-cased "if n == 1" hack.
+      </div>
+
+      <h3>Compiling / debugging / refactoring — mutually exclusive states</h3>
+      <p>A coder is in exactly one of these three states at a time. The cycle is fixed: compile → debug →
+        refactor → (immediately request dongles again) → compile → …</p>
+
+      <h3>Burnout — the precise definition</h3>
+      <p><em>"If a coder did not start compiling within <code>time_to_burnout</code> ms since the
+        beginning of their last compile or the beginning of the simulation, they burn out."</em></p>
+      <div class="callout">
+        <span class="tag">The subtlety almost everyone misses</span>
+        The deadline resets at the moment compiling <strong>starts</strong> — not when it ends, and not
+        when the coder requests dongles. This means the clock keeps running through debug, refactor,
+        <em>and</em> any time spent waiting for dongles. A coder can absolutely burn out while sitting in
+        the request queue, not only while idle.
+      </div>
+
+      <h3>Stop conditions</h3>
+      <p>The simulation stops the instant either of these becomes true:</p>
+      <ul>
+        <li>Any coder burns out (immediate, hard stop).</li>
+        <li>Every coder has completed at least <code>number_of_compiles_required</code> compiles.</li>
+      </ul>
+
+      <h3>Cooldown</h3>
+      <p>Applies strictly <em>after release</em>: a dongle is unavailable for <code>dongle_cooldown</code>
+        ms starting the moment its previous holder puts it down — not while it's being held.</p>
+
+      <h3>Fair arbitration</h3>
+      <p><code>fifo</code>: strict arrival order. <code>edf</code>: earliest
+        <code>last_compile_start + time_to_burnout</code> first, with a deterministic tie-break. The
+        program must guarantee liveness under <code>edf</code> for feasible parameters, and a dedicated
+        monitor thread must detect burnout to within 10 ms.</p>
+
+      <h3>Log format — must match exactly</h3>
+      <pre>timestamp_in_ms X has taken a dongle
+timestamp_in_ms X is compiling
+timestamp_in_ms X is debugging
+timestamp_in_ms X is refactoring
+timestamp_in_ms X burned out</pre>
+      <p>The test harness parses these lines with <code>awk</code>/<code>grep</code> — exact wording,
+        exact spacing, one message per line, never interleaved with another line.</p>
+
+      <h3>Build &amp; submission rules</h3>
+      <ul>
+        <li>Binary named <code>codexion</code>; compiles with <code>-Wall -Wextra -Werror -pthread</code>,
+          zero warnings.</li>
+        <li>Custom priority queue mandatory — no standard-library heap/priority queue.</li>
+        <li>Zero memory leaks; zero unexpected crashes (any crash → automatic 0).</li>
+        <li>No global variables, anywhere.</li>
+        <li>Makefile rules: <code>NAME</code>, <code>all</code>, <code>clean</code>, <code>fclean</code>,
+          <code>re</code> — no unnecessary relinking.</li>
+        <li><code>libft</code> is <strong>not</strong> authorized for this project.</li>
+      </ul>
+
+      <h3>README requirements</h3>
+      <p>At the repository root, in English, first line italicized and exactly formatted as
+        <em>"This project has been created as part of the 42 curriculum by &lt;login1&gt;[, &lt;login2&gt;…]"</em>,
+        plus these sections:</p>
+      <ul>
+        <li><strong>Description</strong> — purpose and overview.</li>
+        <li><strong>Instructions</strong> — compile / install / run.</li>
+        <li><strong>Resources</strong> — references used, and an honest account of how AI was used and for what.</li>
+        <li><strong>Blocking cases handled</strong> — every concurrency issue you addressed (deadlock,
+          starvation, cooldown, precise burnout, log serialization).</li>
+        <li><strong>Thread synchronization mechanisms</strong> — the actual primitives you used and how
+          they coordinate access to dongles, logging, and monitor state, with concrete examples of how
+          races are prevented.</li>
+      </ul>
+
+      <h3>The recode exercise</h3>
+      <p>The evaluation may ask for a small live modification — the grading sheet's own example is turning
+        <code>fifo</code> into a <code>lifo</code> scheduler (most recent requester served first). If your
+        scheduling decision truly lives in one isolated comparison function (see Phase 07's "one heap
+        engine"), this becomes a five-minute, single-function edit instead of a scramble.</p>
+    </section>
+
+    <!-- ============ PHASE 9 ============ -->
+    <section class="phase" id="phase-9">
+      <div class="phase-head"><span class="phase-num">09</span><h2>Philosophers in Disguise</h2></div>
+      <p class="phase-sub">Recognizing the classic problem underneath — and picking the simplest correct fix.</p>
+
+      <h3>The mapping</h3>
+      <table>
+        <tr><th>Dining Philosophers</th><th>Codexion</th></tr>
+        <tr><td>Philosopher</td><td>Coder</td></tr>
+        <tr><td>Fork</td><td>Dongle</td></tr>
+        <tr><td>Needs both forks to eat</td><td>Needs both dongles to compile</td></tr>
+        <tr><td>Circular table</td><td>Circular seating, exactly as specified</td></tr>
+      </table>
+      <p>This identity is exact. Every classic risk (and classic fix) applies directly.</p>
+
+      <h3>Why the naive approach deadlocks</h3>
+      <p>If every coder independently does "lock left dongle's mutex, then lock right dongle's mutex,"
+        and all N coders do this at once, every coder ends up holding its left dongle while waiting
+        forever for its right — a perfect circular wait. This is Coffman's four conditions, satisfied
+        simultaneously, by construction.</p>
+
+      <h3>Classic textbook fixes (for context)</h3>
+      <ul>
+        <li><strong>Resource ordering</strong>: odd-numbered coders pick left-then-right, even-numbered
+          pick right-then-left — breaks circular wait by forcing at least one coder to eventually pick
+          the "shared" dongle in an order that can't complete a cycle.</li>
+        <li><strong>Arbiter / limited concurrency</strong>: only allow N−1 coders to attempt acquisition
+          simultaneously — breaks hold-and-wait globally.</li>
+      </ul>
+
+      <div class="callout tip">
+        <span class="tag">The simpler fix this project's spec actually points to</span>
+        Don't have coders lock two independent per-dongle mutexes at all. Instead, route every
+        acquisition through <strong>one central arbiter</strong> — the priority queue/heap itself, guarded
+        by a single mutex + condition variable. A coder submits <em>one combined request</em> for "my left
+        and right dongle" as an atomic unit; the arbiter grants both together or neither. There is never a
+        moment where a coder holds one dongle while waiting for the other — which means hold-and-wait,
+        and therefore circular wait, and therefore deadlock, is structurally impossible. It also happens
+        to be the simplest option: one lock to reason about, one queue, one grant function — exactly the
+        "no over-engineering" outcome you're after.
+      </div>
+
+      <p>This single decision is the architectural spine of the whole project: <strong>dongles are
+        passive data</strong> (an availability flag + a last-release timestamp), not independently
+        lockable objects that coders fight over directly. All the actual arbitration logic lives in one
+        place.</p>
+    </section>
+
+    <!-- ============ PHASE 10 ============ -->
+    <section class="phase" id="phase-10">
+      <div class="phase-head"><span class="phase-num">10</span><h2>Scope &amp; Design Philosophy</h2></div>
+      <p class="phase-sub">Turning "simple, minimal, procedural" into concrete rules.</p>
+
+      <ul class="checklist">
+        <li><strong>One shared struct owns everything.</strong> Parsed arguments, coder array, dongle
+          array, the heap, the base timestamp, the logging mutex — all fields of one struct, passed
+          everywhere by pointer. This is your entire answer to "no global variables."</li>
+        <li><strong>One function, one responsibility.</strong> Aim for short, single-purpose functions —
+          this isn't just a style preference, it's the Norm's own function-length rule (Phase 14).</li>
+        <li><strong>No speculative abstraction.</strong> No generic "event system," no multiple heap
+          types, no plugin architecture. One heap. One monitor. One logging function. The <em>only</em>
+          justified indirection is the scheduler's compare rule, because the subject itself demands it be
+          swappable (fifo/edf, and the recode exercise).</li>
+        <li><strong>Errors are handled, never ignored, never fatal-by-accident.</strong> Every syscall,
+          every <code>pthread_*</code> call, every <code>malloc</code> gets its return value checked and
+          handled with a clean, symmetric teardown — because an unhandled failure path is exactly the kind
+          of "unexpected exit" the subject scores as an automatic zero.</li>
+        <li><strong>Prove it in isolation before wiring it together.</strong> The heap can be built and
+          hand-tested with no threads at all. The logger can be smoke-tested with a trivial multi-thread
+          program before it's used for real. Build bottom-up, verify each layer, then connect them.</li>
+      </ul>
+    </section>
+
+    <div class="part-title">PART III — ARCHITECTURE</div>
+
+    <!-- ============ PHASE 11 ============ -->
+    <section class="phase" id="phase-11">
+      <div class="phase-head"><span class="phase-num">11</span><h2>Files &amp; Structure</h2></div>
+      <p class="phase-sub">A procedural file layout — one clear responsibility per file.</p>
+
+      <table>
+        <tr><th>File</th><th>Responsibility</th></tr>
+        <tr><td><code>main.c</code></td><td>Orchestration only: parse → init → spawn threads → join → cleanup → exit code. No logic of its own.</td></tr>
+        <tr><td><code>parsing.c</code></td><td>Argument count/format/range validation and conversion; rejects anything malformed before any allocation happens.</td></tr>
+        <tr><td><code>structures.h</code></td><td>Every struct, enum, and constant definition (see Phase 12) — the single source of truth for shapes of data.</td></tr>
+        <tr><td><code>init.c</code></td><td>Allocates and zero-initializes coders, dongles, the heap, and every mutex/condition variable.</td></tr>
+        <tr><td><code>coder.c</code></td><td>The coder thread routine and its four phase steps: request, compile, debug, refactor.</td></tr>
+        <tr><td><code>scheduler.c</code></td><td>The heap (insert/extract/compare) and the request/grant/release logic — the "central arbiter" from Phase 09.</td></tr>
+        <tr><td><code>monitor.c</code></td><td>The monitor thread routine: timed-wait on the nearest deadline, precise burnout detection.</td></tr>
+        <tr><td><code>logger.c</code></td><td>Elapsed-time computation plus the single mutex-guarded logging function used by every log line.</td></tr>
+        <tr><td><code>cleanup.c</code></td><td>Symmetric teardown: join every thread, destroy every mutex/cond, free every allocation.</td></tr>
+        <tr><td><code>utils.c</code></td><td>Small shared helpers: elapsed-ms conversion, a checked-malloc wrapper, a clean-error-exit helper.</td></tr>
+      </table>
+
+      <div class="callout">
+        <span class="tag">This is a starting sketch, not a contract</span>
+        The Norm caps functions per file (commonly five), so <code>scheduler.c</code> may end up splitting
+        into a dedicated <code>heap.c</code> once the real function count is known. Treat this table as
+        the shape of the solution; the exact file boundaries get finalized once actual implementation
+        begins.
+      </div>
+    </section>
+
+    <!-- ============ PHASE 12 ============ -->
+    <section class="phase" id="phase-12">
+      <div class="phase-head"><span class="phase-num">12</span><h2>Data Blueprint</h2></div>
+      <p class="phase-sub">Every struct's fields, described in prose — no code.</p>
+
+      <h4>t_dongle</h4>
+      <ul>
+        <li><strong>id</strong> — its position on the table.</li>
+        <li><strong>is_available</strong> — whether it currently sits free.</li>
+        <li><strong>last_release_ms</strong> — timestamp used to enforce the cooldown window.</li>
+      </ul>
+      <p class="dim">No per-dongle mutex — arbitration is centralized (Phase 09), so a dongle is
+        pure data, only ever touched while the one central lock is already held.</p>
+
+      <h4>t_coder</h4>
+      <ul>
+        <li><strong>id</strong> — 1…N.</li>
+        <li><strong>left_dongle_id / right_dongle_id</strong> — its two circular neighbors.</li>
+        <li><strong>compiles_done</strong> — progress toward <code>number_of_compiles_required</code>.</li>
+        <li><strong>last_compile_start_ms</strong> — the value the burnout deadline is computed from.</li>
+        <li><strong>state</strong> — an enum: waiting / compiling / debugging / refactoring.</li>
+        <li>a pointer back to the one shared environment struct.</li>
+      </ul>
+
+      <h4>t_request (a heap entry)</h4>
+      <ul>
+        <li><strong>coder_id</strong> — who is asking.</li>
+        <li><strong>key</strong> — either an arrival sequence number (<code>fifo</code>) or a deadline
+          timestamp (<code>edf</code>), chosen once at startup.</li>
+      </ul>
+
+      <h4>t_heap</h4>
+      <ul>
+        <li>a dynamically-sized array of <code>t_request</code>, current size, and capacity.</li>
+        <li>a flag recording which comparison mode is active.</li>
+        <li>one mutex and one condition variable — this <em>is</em> the central arbiter.</li>
+      </ul>
+
+      <h4>t_env — the one shared struct</h4>
+      <ul>
+        <li>the parsed, validated arguments.</li>
+        <li>the array of coders, the array of dongles, the heap.</li>
+        <li><strong>t0</strong> — the simulation's base timestamp.</li>
+        <li>the logging mutex.</li>
+        <li>a shared "stop" flag (plus the mutex/cond used to publish it) — set either by the monitor
+          on burnout, or by whichever coder thread completes the last compile needed to satisfy
+          <code>number_of_compiles_required</code> for everyone.</li>
+        <li>a running count of how many coders have reached the required compile count.</li>
+      </ul>
+    </section>
+
+    <!-- ============ PHASE 13 ============ -->
+    <section class="phase" id="phase-13">
+      <div class="phase-head"><span class="phase-num">13</span><h2>Concurrency Protocol</h2></div>
+      <p class="phase-sub">The exact sequence of steps — as an outline, not compilable code.</p>
+
+      <h3>Coder thread — one cycle</h3>
+      <div class="term-title">outline, not code</div>
+      <pre>loop while stop-flag is not set:
+    submit a combined request for (left dongle, right dongle) to the arbiter
+    block on the arbiter's condition variable until:
+        - both dongles are granted together, or
+        - the stop-flag becomes set (exit the loop, don't start a new attempt)
+    log "has taken a dongle" for each of the two dongles
+    log "is compiling"
+    record last_compile_start_ms = now                         &lt;- resets the burnout deadline
+    sleep/wait time_to_compile ms
+    mark both dongles released (set last_release_ms = now); wake the arbiter
+    log "is debugging"      ; sleep time_to_debug ms
+    log "is refactoring"    ; sleep time_to_refactor ms
+    increment compiles_done
+    if compiles_done == number_of_compiles_required:
+        atomically increment the shared "coders satisfied" counter
+        if that counter now equals number_of_coders:
+            set stop-flag, wake everyone</pre>
+
+      <div class="callout">
+        <span class="tag">Why the deadline field updates exactly when compiling starts</span>
+        This mirrors the subject's literal wording: the burnout window is measured "since the beginning
+        of their last compile." Updating it earlier (at request time) or later (at compile end) would
+        silently change the semantics and desynchronize your simulation from the reference log examples.
+      </div>
+
+      <h3>Monitor thread — burnout watch</h3>
+      <div class="term-title">outline, not code</div>
+      <pre>loop while stop-flag is not set:
+    compute each coder's current deadline (last_compile_start_ms + time_to_burnout,
+        or t0 + time_to_burnout if they haven't compiled yet)
+    find the single earliest upcoming deadline among all coders
+    pthread_cond_timedwait on the shared state-changed condition, until that deadline
+    if woken early (a coder's state changed): loop back, recompute
+    if the wait timed out on its own:
+        re-check that specific coder: have they started compiling since?
+        if not -> that coder burned out: log immediately, set stop-flag, wake everyone
+        if yes -> spurious/racy wakeup near the deadline, loop back and recompute</pre>
+
+      <h3>Shutdown</h3>
+      <p>Once the stop-flag is set (by either the monitor or a completing coder), every sleeping thread
+        wakes via broadcast, observes the flag, and exits its loop cleanly — a currently-compiling coder
+        is allowed to finish its current phase rather than being cut off, honoring the "no unexpected
+        exits" rule. <code>main</code> then joins every coder thread, joins the monitor thread, destroys
+        every mutex/condition variable, and frees every allocation, strictly in that dependency order.</p>
+    </section>
+
+    <div class="part-title">PART IV — SHIP IT</div>
+
+    <!-- ============ PHASE 14 ============ -->
+    <section class="phase" id="phase-14">
+      <div class="phase-head"><span class="phase-num">14</span><h2>Norm Checklist</h2></div>
+      <p class="phase-sub">The 42 Norm rules most likely to bite a concurrency project.</p>
+
+      <ul class="checklist">
+        <li>Function body ≤ 25 lines (braces excluded).</li>
+        <li>≤ 5 variables declared per function; ≤ 4 parameters per function.</li>
+        <li>One statement per line; one variable declaration per line.</li>
+        <li>No <code>for</code> loop with multiple statements packed into init/condition/increment beyond
+          a single simple counter; no assignment inside a condition.</li>
+        <li>Forbidden outright: variable-length arrays, nested functions, the ternary operator
+          (<code>?:</code>), the comma operator.</li>
+        <li>Global variables are forbidden by the Norm <em>independently</em> of the subject's own ban —
+          two reasons pointing at the same architectural decision from Phase 01.</li>
+        <li>≤ 5 functions per <code>.c</code> file — the reason <code>scheduler.c</code> may need to
+          split (Phase 11).</li>
+        <li>Include guards on every header; forward declarations of shared types belong in
+          <code>structures.h</code>.</li>
+        <li>Makefile: exactly the rules <code>NAME</code>, <code>all</code>, <code>clean</code>,
+          <code>fclean</code>, <code>re</code>; must not relink when nothing changed.</li>
+      </ul>
+    </section>
+
+    <!-- ============ PHASE 15 ============ -->
+    <section class="phase" id="phase-15">
+      <div class="phase-head"><span class="phase-num">15</span><h2>Your Test Harness</h2></div>
+      <p class="phase-sub">What <code>stress_test.sh</code> and <code>test_codexion.sh</code> actually verify.</p>
+
+      <h3><code>stress_test.sh</code> — liveness under repetition</h3>
+      <p>Runs four fixed configurations (cooldowns 400/800, under both schedulers) once each, checking
+        that no burnout occurs and that all four phase-log lines appear; then repeats each configuration
+        <strong>20 times</strong> in a loop, watching purely for any burnout appearing. This is a targeted
+        liveness/fairness check — it's designed to expose an <code>edf</code> implementation that starves
+        a coder only occasionally, which a single run would never catch.</p>
+
+      <h3><code>test_codexion.sh</code> — correctness, precisely</h3>
+      <p>Runs the exact benchmark cases from the grading rubric (single-coder, easy fifo/edf, the
+        infeasible burnout edge case, cooldown and contention cases, and a 50-coder large case), each
+        repeated multiple times with a 30-second timeout, and for every produced log runs <code>check_log</code>:</p>
+      <table>
+        <tr><th>Check</th><th>What it encodes</th></tr>
+        <tr><td>Two-dongle rule</td><td>An <code>awk</code> state machine confirming every "is compiling" line was preceded by exactly two "has taken a dongle" lines for that coder — a direct, executable test of "compiling requires two dongles held simultaneously."</td></tr>
+        <tr><td>Burnout is the last line</td><td>Once a coder burns out, nothing else may be logged afterward — the simulation must stop immediately.</td></tr>
+        <tr><td>Serialized output</td><td>A regex heuristic looking for signs of two merged log fragments on one line — a smoke test for the logging mutex.</td></tr>
+      </table>
+      <p>It finishes with <code>valgrind --leak-check=full</code> (memory leaks) and
+        <code>valgrind --tool=helgrind</code> (data races), grepping for a clean error summary. The
+        grading rubric additionally mentions <code>--tool=drd</code> and compiling with
+        <code>-fsanitize=thread</code> as tools an evaluator may reach for — worth running yourself before
+        any defense.</p>
+
+      <div class="callout tip">
+        <span class="tag">Use these while building, not only at the end</span>
+        Both scripts are excellent regression tests during implementation: run them after every module
+        lands, not just once the whole program compiles for the first time.
+      </div>
+    </section>
+
+    <!-- ============ PHASE 16 ============ -->
+    <section class="phase" id="phase-16">
+      <div class="phase-head"><span class="phase-num">16</span><h2>Roadmap</h2></div>
+      <p class="phase-sub">The order implementation will follow, module by module — this is what gets invoked next.</p>
+
+      <ol>
+        <li>Argument parsing and validation — no threads yet; prove rejection of bad input first.</li>
+        <li>All struct/type definitions in <code>structures.h</code>, matching Phase 12 exactly.</li>
+        <li>The heap in isolation — insert/extract/compare, hand-verified with printed sequences before
+          any thread touches it.</li>
+        <li>The logger — one mutex, one elapsed-time function — smoke-tested for serialization with a
+          tiny throwaway multi-thread program.</li>
+        <li>Environment init and its mirrored cleanup — an empty but correctly-plumbed skeleton, before
+          any real coder logic exists.</li>
+        <li>The coder thread routine, one phase at a time (request → compile → debug → refactor),
+          compiling and testing after each phase, never all at once.</li>
+        <li>The monitor thread's precise, timed-wait-based burnout detection.</li>
+        <li>The shared stop-flag and the "all coders satisfied" completion path.</li>
+        <li>Continuous runs of both shell scripts throughout — not saved for the end.</li>
+        <li><code>valgrind</code> and <code>helgrind</code> clean before calling any milestone done.</li>
+        <li>The Makefile (<code>NAME</code>/<code>all</code>/<code>clean</code>/<code>fclean</code>/<code>re</code>) and a full Norm pass.</li>
+        <li>The README, with all five required sections and an honest account of AI usage.</li>
+        <li>A dry run of the FIFO→LIFO recode exercise, to prove the scheduler is genuinely isolated.</li>
+      </ol>
+
+      <div class="callout tip">
+        <span class="tag">Ready when you are</span>
+        Say which module to start — for example "start on argument parsing" or "let's build the heap" —
+        and that becomes its own focused implementation phase, with real, working C.
+      </div>
+    </section>
+
+    <footer class="end">
+      Codexion Master Course — theory and architecture only. No implementation code above; every C module
+      in Phase 16's roadmap is a separate, later phase.
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>
