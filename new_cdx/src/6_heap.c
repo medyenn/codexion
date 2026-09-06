@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   heap.c                                             :+:      :+:    :+:   */
+/*   6_heap.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:25:31 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/02 14:25:32 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/06 18:29:56 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,23 +67,12 @@ void	heap_sift_down(t_request *heap, int size, int idx)
 	}
 }
 
-int	heap_push(t_dongle *d, t_request req)
+int	heap_push(t_sim *sim, t_request req)
 {
-	t_request	*tmp;
-	int			new_cap;
-
-	if (d->heap_size >= d->heap_cap)
-	{
-		new_cap = d->heap_cap * 2;
-		tmp = (t_request *)realloc(d->heap,
-				(size_t)new_cap * sizeof(t_request));
-		if (!tmp)
-			return (-1);
-		d->heap = tmp;
-		d->heap_cap = new_cap;
-	}
-	d->heap[d->heap_size] = req;
-	heap_sift_up(d->heap, d->heap_size);
-	d->heap_size++;
+	if (sim->heap_size >= sim->heap_cap)
+		return (-1);
+	sim->heap[sim->heap_size] = req;
+	heap_sift_up(sim->heap, sim->heap_size);
+	sim->heap_size++;
 	return (0);
 }

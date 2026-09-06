@@ -1,87 +1,56 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   coder.c                                            :+:      :+:    :+:   */
+/*   4_coder.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:24:30 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/02 14:27:34 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/06 19:30:38 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void	pick_dongle_order(t_coder *c,
-				t_dongle **first,
-				t_dongle **second)
-{
-	if (c->left->id < c->right->id)
-	{
-		*first = c->left;
-		*second = c->right;
-	}
-	else
-	{
-		*first = c->right;
-		*second = c->left;
-	}
-}
-
-static bool	take_two_dongles(t_coder *c)
-{
-	t_dongle	*first;
-	t_dongle	*second;
-
-	pick_dongle_order(c, &first, &second);
-	dongle_request(first, c);
-	if (sim_is_stopped(c->sim))
-	{
-		dongle_release(first, c->sim);
-		return (false);
-	}
-	log_event(c->sim, c->id, "has taken a dongle");
-	dongle_request(second, c);
-	if (sim_is_stopped(c->sim))
-	{
-		dongle_release(second, c->sim);
-		dongle_release(first, c->sim);
-		return (false);
-	}
-	log_event(c->sim, c->id, "has taken a dongle");
-	return (true);
-}
-
+/*
+** One combined, atomic request for both of this coder's dongles.
+** The ticket is captured once, right here, so the whole attempt is
+** ranked as a single arrival, not two. dongle_request only returns
+** once the arbiter has granted both dongles together, or the
+** simulation has stopped.
+*/
 static bool	take_dongles(t_coder *c)
 {
 	if (sim_is_stopped(c->sim))
 		return (false);
-	if (c->sim->n == 1)
-	{
-		dongle_request(c->left, c);
-		if (sim_is_stopped(c->sim))
-		{
-			dongle_release(c->left, c->sim);
-			return (false);
-		}
-		log_event(c->sim, c->id, "has taken a dongle");
-		return (true);
-	}
-	return (take_two_dongles(c));
+	c->ticket = get_time_ms();
+	dongle_request(c->sim, c);
+	if (sim_is_stopped(c->sim))
+		return (false);
+	log_event(c->sim, c->id, "has taken a dongle");
+	log_event(c->sim, c->id, "has taken a dongle");
+	return (true);
 }
 
 static bool	coder_cycle(t_coder *c, t_sim *sim)
 {
-	if (!take_dongles(c) || sim_is_stopped(sim))
+	pthread_mutex_lock(&c->cond_mutex);
+	if (c->compile_count >= sim->compiles_required)
 	{
-		if (sim_is_stopped(sim) && c->sim->n != 1)
-			put_dongles(c);
+		pthread_mutex_unlock(&c->cond_mutex);
 		return (false);
 	}
+	pthread_mutex_unlock(&c->cond_mutex);
+	if (!take_dongles(c))
+		return (false);
+	pthread_mutex_lock(&c->cond_mutex);
 	c->last_compile_start = get_time_ms();
+	pthread_mutex_unlock(&c->cond_mutex);
 	log_event(sim, c->id, "is compiling");
 	msleep(sim->time_to_compile);
+	pthread_mutex_lock(&c->cond_mutex);
 	c->compile_count++;
+	pthread_mutex_unlock(&c->cond_mutex);
 	put_dongles(c);
 	if (sim_is_stopped(sim))
 		return (false);
@@ -101,8 +70,6 @@ void	*coder_routine(void *arg)
 
 	c = (t_coder *)arg;
 	sim = c->sim;
-	if (sim->n > 1 && c->id % 2 == 0)
-		usleep((useconds_t)(sim->time_to_compile / 2 * 1000LL));
 	while (!sim_is_stopped(sim))
 	{
 		if (!coder_cycle(c, sim))

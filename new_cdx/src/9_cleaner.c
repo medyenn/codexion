@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cleanup.c                                          :+:      :+:    :+:   */
+/*   9_cleaner.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:24:08 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/02 14:27:29 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/06 18:30:46 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,12 @@ static void	free_coders(t_sim *sim)
 
 static void	free_dongles(t_sim *sim)
 {
-	int	i;
-
-	i = 0;
-	while (i < sim->n)
-		dongle_destroy(&sim->dongles[i++]);
 	free(sim->dongles);
 	sim->dongles = NULL;
+	free(sim->heap);
+	sim->heap = NULL;
+	free(sim->pending);
+	sim->pending = NULL;
 }
 
 void	sim_cleanup(t_sim *sim)
@@ -51,4 +50,5 @@ void	sim_cleanup(t_sim *sim)
 		free_dongles(sim);
 	pthread_mutex_destroy(&sim->log_mutex);
 	pthread_mutex_destroy(&sim->stop_mutex);
+	pthread_mutex_destroy(&sim->arb_mutex);
 }

@@ -6,54 +6,17 @@
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:25:16 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/05 13:46:40 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/06 18:29:45 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	dongle_init(t_dongle *d, int id, t_scheduler sched)
+void	dongle_init(t_dongle *d, int id)
 {
 	d->id = id;
 	d->in_use = false;
 	d->release_time = 0;
-	d->heap_size = 0;
-	d->heap_cap = 8;
-	d->scheduler = sched;
-	d->heap = (t_request *)malloc((size_t)d->heap_cap * sizeof(t_request));
-	if (!d->heap)
-		return (-1);
-	if (pthread_mutex_init(&d->mutex, NULL) != 0)
-	{
-		free(d->heap);
-		d->heap = NULL;
-		return (-1);
-	}
-	return (0);
-}
-
-void	dongle_request(t_dongle *d, t_coder *c)
-{
-	t_request	req;
-
-	req.priority = get_time_ms();
-	if (d->scheduler == POLICY_EDF)
-		req.priority = c->last_compile_start + c->sim->time_to_burnout;
-	req.coder_id = c->id;
-	req.cond = &c->cond;
-	pthread_mutex_lock(&d->mutex);
-	heap_push(d, req);
-	pthread_mutex_lock(&c->cond_mutex);
-	pthread_mutex_unlock(&d->mutex);
-	while (1)
-	{
-		if (dongle_try_take(d, c))
-			break ;
-		if (sim_is_stopped(c->sim))
-			break ;
-		dongle_wait(c);
-	}
-	pthread_mutex_unlock(&c->cond_mutex);
 }
 
 bool	dongle_ready(t_dongle *d, long long cooldown_ms)
@@ -68,44 +31,84 @@ bool	dongle_ready(t_dongle *d, long long cooldown_ms)
 	return (now >= d->release_time + cooldown_ms);
 }
 
-bool	dongle_try_take(t_dongle *d, t_coder *c)
+/*
+** Try to grant every request that CAN be granted right now, always
+** considering the highest-priority (earliest ticket / soonest
+** deadline) request first. A request only ever waits behind a
+** higher-priority one when they truly conflict over the same
+** dongle - an unrelated, currently-free pair is never left idle
+** just because someone else, elsewhere on the ring, is stuck.
+** A coder needing the same dongle twice (n == 1) can never satisfy
+** "two DISTINCT dongles" -> permanently refused here: guaranteed
+** burnout, with no special-casing needed anywhere else.
+** Must be called with sim->arb_mutex already held.
+*/
+void	dispatch(t_sim *sim)
 {
-	int	idx;
+	t_request	req;
+	t_coder		*c;
+	int			pending;
 
-	pthread_mutex_unlock(&c->cond_mutex);
-	pthread_mutex_lock(&d->mutex);
-	idx = heap_find(d, c->id);
-	if (idx == 0
-		&& dongle_ready(d, c->sim->dongle_cooldown)
-		&& !sim_is_stopped(c->sim))
+	pending = 0;
+	while (sim->heap_size > 0)
 	{
-		heap_remove(d, 0);
-		d->in_use = true;
-		d->release_time = 0;
-		pthread_mutex_unlock(&d->mutex);
-		pthread_mutex_lock(&c->cond_mutex);
-		return (true);
+		req = sim->heap[0];
+		heap_remove(sim, 0);
+		c = &sim->coders[req.coder_id - 1];
+		if (c->left != c->right
+			&& dongle_ready(c->left, sim->dongle_cooldown)
+			&& dongle_ready(c->right, sim->dongle_cooldown))
+		{
+			c->left->in_use = true;
+			c->right->in_use = true;
+			pthread_mutex_lock(&c->cond_mutex);
+			c->granted = true;
+			pthread_cond_signal(&c->cond);
+			pthread_mutex_unlock(&c->cond_mutex);
+		}
+		else
+			sim->pending[pending++] = req;
 	}
-	pthread_mutex_unlock(&d->mutex);
-	pthread_mutex_lock(&c->cond_mutex);
-	return (false);
+	while (pending > 0)
+		heap_push(sim, sim->pending[--pending]);
 }
 
-void	dongle_release(t_dongle *d, t_sim *sim)
+void	dongle_request(t_sim *sim, t_coder *c)
 {
-	int	i;
+	t_request	req;
+	int			idx;
 
-	pthread_mutex_lock(&d->mutex);
-	d->in_use = false;
-	d->release_time = get_time_ms();
-	i = 0;
-	while (i < d->heap_size)
+	req.coder_id = c->id;
+	req.priority = c->ticket;
+	if (sim->scheduler == POLICY_EDF)
+		req.priority = c->last_compile_start + sim->time_to_burnout;
+	pthread_mutex_lock(&c->cond_mutex);
+	c->granted = false;
+	pthread_mutex_unlock(&c->cond_mutex);
+	pthread_mutex_lock(&sim->arb_mutex);
+	heap_push(sim, req);
+	dispatch(sim);
+	pthread_mutex_unlock(&sim->arb_mutex);
+	if (!coder_wait_grant(sim, c))
 	{
-		pthread_mutex_lock(&sim->coders[d->heap[i].coder_id - 1].cond_mutex);
-		pthread_cond_signal(d->heap[i].cond);
-		pthread_mutex_unlock(
-			&sim->coders[d->heap[i].coder_id - 1].cond_mutex);
-		i++;
+		pthread_mutex_lock(&sim->arb_mutex);
+		idx = heap_find(sim, c->id);
+		if (idx != -1)
+			heap_remove(sim, idx);
+		pthread_mutex_unlock(&sim->arb_mutex);
 	}
-	pthread_mutex_unlock(&d->mutex);
+}
+
+void	dongle_release(t_sim *sim, t_coder *c)
+{
+	pthread_mutex_lock(&sim->arb_mutex);
+	c->left->in_use = false;
+	c->left->release_time = get_time_ms();
+	if (c->right != c->left)
+	{
+		c->right->in_use = false;
+		c->right->release_time = get_time_ms();
+	}
+	dispatch(sim);
+	pthread_mutex_unlock(&sim->arb_mutex);
 }
