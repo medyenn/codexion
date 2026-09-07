@@ -6,7 +6,7 @@
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:25:16 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/06 18:29:45 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/07 02:03:07 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,6 @@ bool	dongle_ready(t_dongle *d, long long cooldown_ms)
 	return (now >= d->release_time + cooldown_ms);
 }
 
-/*
-** Try to grant every request that CAN be granted right now, always
-** considering the highest-priority (earliest ticket / soonest
-** deadline) request first. A request only ever waits behind a
-** higher-priority one when they truly conflict over the same
-** dongle - an unrelated, currently-free pair is never left idle
-** just because someone else, elsewhere on the ring, is stuck.
-** A coder needing the same dongle twice (n == 1) can never satisfy
-** "two DISTINCT dongles" -> permanently refused here: guaranteed
-** burnout, with no special-casing needed anywhere else.
-** Must be called with sim->arb_mutex already held.
-*/
 void	dispatch(t_sim *sim)
 {
 	t_request	req;

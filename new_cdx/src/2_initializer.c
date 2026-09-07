@@ -6,7 +6,7 @@
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:25:48 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/06 18:30:37 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/07 02:01:04 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,7 @@ static int	init_dongles(t_sim *sim)
 	sim->heap_cap = sim->n;
 	i = 0;
 	while (i < sim->n)
-	{
-		dongle_init(&sim->dongles[i], i);
-		i++;
-	}
+		dongle_init(&sim->dongles[i], i++);
 	return (0);
 }
 

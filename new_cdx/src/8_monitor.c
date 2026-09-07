@@ -6,7 +6,7 @@
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:25:59 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/06 19:34:28 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/07 02:04:58 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,6 @@ static bool	all_compiled(t_sim *sim)
 	return (true);
 }
 
-/*
-** One pass over every coder: reports who burned out (0 if nobody did)
-** and, either way, how long the monitor may safely sleep before it
-** needs to look again (the time left until the closest deadline,
-** capped at 10ms so a completed simulation is still noticed promptly).
-*/
 static int	scan_coders(t_sim *sim, long long *wake_us)
 {
 	long long	now;
@@ -92,6 +86,7 @@ void	*monitor_routine(void *arg)
 	t_sim		*sim;
 	int			burned;
 	long long	wake_us;
+	long long	cooldown_us;
 
 	sim = (t_sim *)arg;
 	while (!sim_is_stopped(sim))
@@ -102,6 +97,9 @@ void	*monitor_routine(void *arg)
 			wake_all_coders(sim);
 			break ;
 		}
+		pthread_mutex_lock(&sim->arb_mutex);
+		dispatch(sim);
+		pthread_mutex_unlock(&sim->arb_mutex);
 		burned = scan_coders(sim, &wake_us);
 		if (burned != 0)
 		{
@@ -110,6 +108,9 @@ void	*monitor_routine(void *arg)
 			wake_all_coders(sim);
 			break ;
 		}
+		cooldown_us = next_cooldown_us(sim);
+		if (cooldown_us < wake_us)
+			wake_us = cooldown_us;
 		usleep((useconds_t)wake_us);
 	}
 	return (NULL);

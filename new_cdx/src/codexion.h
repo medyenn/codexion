@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/02 14:24:55 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/06 18:29:31 by mennih           ###   ########.fr       */
+/*   Created: 2026/07/06 22:10:37 by mennih            #+#    #+#             */
+/*   Updated: 2026/09/07 02:02:03 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,6 @@ typedef struct s_sim		t_sim;
 typedef struct s_dongle		t_dongle;
 typedef struct s_coder		t_coder;
 
-/*
-** One entry in the sim-wide wait-heap: a coder's request for its OWN
-** pair of dongles (sim->coders[coder_id - 1].left/right), ranked by
-** priority (arrival ticket for fifo, deadline for edf).
-*/
 typedef struct s_request
 {
 	long long	priority;
@@ -55,18 +50,9 @@ struct s_coder
 	int				id;
 	t_dongle		*left;
 	t_dongle		*right;
-	/* last_compile_start and compile_count are read by the monitor
-	** thread and written by this coder's own thread: both accesses
-	** must go through cond_mutex. */
 	long long		last_compile_start;
 	int				compile_count;
-	/* ticket is this coder's arrival priority for the CURRENT attempt,
-	** captured once before requesting dongles, so the whole combined
-	** request is ranked as a single event. */
 	long long		ticket;
-	/* Set by the arbiter (dispatch), under cond_mutex, the instant this
-	** coder's combined request is granted. This coder waits on exactly
-	** this flag, guarded by the same mutex used to wait on it. */
 	bool			granted;
 	bool			burned_out;
 	t_sim			*sim;
@@ -90,17 +76,10 @@ struct s_sim
 	volatile bool	stopped;
 	pthread_mutex_t	log_mutex;
 	pthread_mutex_t	stop_mutex;
-	/* The central arbiter: every "I need my two dongles" request from
-	** every coder goes through this ONE heap, guarded by ONE mutex, so
-	** a grant is always an atomic both-or-neither decision. */
 	pthread_mutex_t	arb_mutex;
 	t_request		*heap;
 	int				heap_size;
 	int				heap_cap;
-	/* Scratch space dispatch() uses to set aside requests that are not
-	** yet grantable while it keeps scanning the rest in priority
-	** order; sized once at init, capacity == n (the most that can
-	** ever be pending at once). */
 	t_request		*pending;
 	pthread_t		*threads;
 	pthread_t		monitor_thread;
@@ -130,8 +109,8 @@ bool		dongle_ready(t_dongle *d, long long cooldown_ms);
 void		dispatch(t_sim *sim);
 void		dongle_request(t_sim *sim, t_coder *c);
 void		dongle_release(t_sim *sim, t_coder *c);
-void		dongle_wait(t_coder *c);
 bool		coder_wait_grant(t_sim *sim, t_coder *c);
+long long	next_cooldown_us(t_sim *sim);
 
 void		*coder_routine(void *arg);
 void		put_dongles(t_coder *c);

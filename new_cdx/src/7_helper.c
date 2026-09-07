@@ -6,7 +6,7 @@
 /*   By: mennih < mennih@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 14:24:47 by mennih            #+#    #+#             */
-/*   Updated: 2026/09/06 18:30:04 by mennih           ###   ########.fr       */
+/*   Updated: 2026/09/07 02:04:40 by mennih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,35 +23,36 @@ bool	coder_wait_grant(t_sim *sim, t_coder *c)
 
 	pthread_mutex_lock(&c->cond_mutex);
 	while (!c->granted && !sim_is_stopped(sim))
-	{
-		dongle_wait(c);
-		if (c->granted || sim_is_stopped(sim))
-			break ;
-		pthread_mutex_unlock(&c->cond_mutex);
-		pthread_mutex_lock(&sim->arb_mutex);
-		dispatch(sim);
-		pthread_mutex_unlock(&sim->arb_mutex);
-		pthread_mutex_lock(&c->cond_mutex);
-	}
+		pthread_cond_wait(&c->cond, &c->cond_mutex);
 	got = c->granted;
 	pthread_mutex_unlock(&c->cond_mutex);
 	return (got);
 }
 
-void	dongle_wait(t_coder *c)
+long long	next_cooldown_us(t_sim *sim)
 {
-	struct timespec	ts;
-	struct timeval	tv;
+	long long	now;
+	long long	remain;
+	long long	nearest;
+	int			i;
 
-	gettimeofday(&tv, NULL);
-	ts.tv_sec = tv.tv_sec;
-	ts.tv_nsec = tv.tv_usec * 1000L + 500000L;
-	if (ts.tv_nsec >= 1000000000L)
+	now = get_time_ms();
+	nearest = 10 * 1000LL;
+	pthread_mutex_lock(&sim->arb_mutex);
+	i = 0;
+	while (i < sim->n)
 	{
-		ts.tv_sec++;
-		ts.tv_nsec -= 1000000000L;
+		if (!sim->dongles[i].in_use && sim->dongles[i].release_time != 0)
+		{
+			remain = sim->dongles[i].release_time
+				+ sim->dongle_cooldown - now;
+			if (remain > 0 && remain * 1000LL < nearest)
+				nearest = remain * 1000LL;
+		}
+		i++;
 	}
-	pthread_cond_timedwait(&c->cond, &c->cond_mutex, &ts);
+	pthread_mutex_unlock(&sim->arb_mutex);
+	return (nearest);
 }
 
 int	heap_find(t_sim *sim, int coder_id)
