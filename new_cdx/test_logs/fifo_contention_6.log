@@ -1,0 +1,31 @@
+0 1 has taken a dongle
+0 1 has taken a dongle
+0 1 is compiling
+0 4 has taken a dongle
+0 4 has taken a dongle
+0 4 is compiling
+200 1 is debugging
+200 4 is debugging
+401 4 is refactoring
+401 1 is refactoring
+1000 5 has taken a dongle
+1000 5 has taken a dongle
+1000 5 is compiling
+1000 3 has taken a dongle
+1000 3 has taken a dongle
+1000 3 is compiling
+1200 5 is debugging
+1200 3 is debugging
+1400 5 is refactoring
+1401 3 is refactoring
+2001 2 has taken a dongle
+2001 2 has taken a dongle
+2001 2 is compiling
+2001 4 has taken a dongle
+2001 4 has taken a dongle
+2001 4 is compiling
+2201 4 is debugging
+2201 2 is debugging
+2401 4 is refactoring
+2401 2 is refactoring
+3001 1 burned out
